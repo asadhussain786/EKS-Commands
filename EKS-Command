@@ -1,0 +1,46 @@
+Step 1: Install AWS CLI
+curl "https://awscli.amazonaws.com/awscli-exe-linux-x86_64-2.0.30.zip" -o "awscliv2.zip"	
+unzip awscliv2.zip
+sudo ./aws/install
+Link: https://docs.aws.amazon.com/cli/latest/userguide/getting-started-version.html
+
+Step 2: Create IAM User with following Policy 
+-> AmazonEKS_CNI_Policy
+-> AmazonEKSClusterPolicy
+-> AmazonEKSServicePolicy
+-> AmazonEKSClusterPolicy
+-> AdministratorAccess
+
+Step 3: Create Access key and add the credentials with below command
+ #aws configure
+
+Step 4: Install Kubectl on your terminal
+   Download the latest release with the command:
+   curl -LO "https://dl.k8s.io/release/$(curl -L -s https://dl.k8s.io/release/stable.txt)/bin/linux/amd64/kubectl"
+   Validate the binary (optional)
+   curl -LO "https://dl.k8s.io/release/$(curl -L -s https://dl.k8s.io/release/stable.txt)/bin/linux/amd64/kubectl.sha256"
+   Validate the kubectl binary against the checksum file
+   echo "$(cat kubectl.sha256)  kubectl" | sha256sum --check
+   If valid, the output is:
+   kubectl: OK
+   Install kubectl
+   sudo install -o root -g root -m 0755 kubectl /usr/local/bin/kubectl
+   Test to ensure the version you installed is up-to-date
+   kubectl version --client
+Link: https://kubernetes.io/docs/tasks/tools/install-kubectl-linux/
+
+Step 5: Install EKSCTL Utility on your terminal 
+ARCH=amd64
+PLATFORM=$(uname -s)_$ARCH
+curl -sLO "https://github.com/eksctl-io/eksctl/releases/latest/download/eksctl_$PLATFORM.tar.gz"
+curl -sL "https://github.com/eksctl-io/eksctl/releases/latest/download/eksctl_checksums.txt" | grep $PLATFORM | sha256sum --check
+tar -xzf eksctl_$PLATFORM.tar.gz -C /tmp && rm eksctl_$PLATFORM.tar.gz
+sudo mv /tmp/eksctl /usr/local/bin
+Test to ensure the version
+kubectl version
+Link: https://eksctl.io/installation/
+
+Step 6: Now create the cluster on AWS 
+eksctl create cluster --name k8s-cluster --version 1.29 --region eu-west-2 --nodegroup-name k8s-nodes --node-type t2.micro --nodes 3 --nodes-min 1 --nodes-max 5 --managed
+Don't forget to set the Kubeconfig path to seamlessly connect to your cluster:
+aws eks --region eu-west-2 update-kubeconfig --name k8s-cluster
